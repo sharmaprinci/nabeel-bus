@@ -186,7 +186,8 @@ const HeroSection = () => {
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const navigate = useNavigate();
 
-        const token = localStorage.getItem("adminToken")
+        const adminToken = localStorage.getItem("adminToken")
+        const userToken = localStorage.getItem("token")
   useEffect(() => {
     const fetchRoutes = async () => {
       try {
@@ -201,7 +202,7 @@ headers: { Authorization: `Bearer ${token}` },
       }
     };
     fetchRoutes();
-  }, [token]);
+  }, [adminToken]);
 
   const getSuggestions = (input, list) =>
     list.filter((city) => city.toLowerCase().includes(input.toLowerCase()));
@@ -212,23 +213,11 @@ headers: { Authorization: `Bearer ${token}` },
     }
 
     try {
-      // const res = await axios.get(
-      //   `${import.meta.env.VITE_BACKEND_URL}/api/buses/search`,
-      //   {
-      //     params: {
-      //       from: fromCity,
-      //       to: toCity,
-      //       date,
-      //     }
-      //   }, {
-      //     headers: { Authorization: `Bearer ${token}` },
-      //   }
-      // );
       const res = await axios.get(
       `${import.meta.env.VITE_BACKEND_URL}/api/buses/search`,
       {
         params: { from: fromCity, to: toCity, date },
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${userToken}` },
       }
     );
 

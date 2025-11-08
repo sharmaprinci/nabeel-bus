@@ -31,16 +31,21 @@ transporter.verify((err, success) => {
 // ✅ Universal reusable mail function
 export const sendEmail = async ({ to, subject, html, attachments }) => {
   try {
+    if (!to) {
+      console.error("❌ Email not sent: No recipient provided.");
+      return;
+    }
+
     const mailOptions = {
       from: `"Nabeel Bus Service" <${process.env.EMAIL_USER}>`,
       to,
-      subject,
-      html,
+      subject: subject || "(No subject)",
+      html: html || "<p>No content</p>",
       attachments,
     };
 
     const info = await transporter.sendMail(mailOptions);
-    console.log("✅ Email sent successfully:", info.messageId);
+    console.log(`✅ Email sent to ${to}:`, info.messageId);
     return info;
   } catch (err) {
     console.error("❌ Email sending failed:", err.message);
@@ -66,7 +71,12 @@ export const sendResetEmail = async (email, token) => {
       <p>If you didn’t request this, you can safely ignore this email.</p>
     </div>
   `;
-  await sendEmail(email, "Password Reset Request", html);
+  await sendEmail({
+    to: email,
+    subject: "Password Reset Request",
+    html,
+  });
+
 };
 
 /**
