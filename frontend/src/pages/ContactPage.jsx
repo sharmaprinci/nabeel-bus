@@ -209,7 +209,8 @@ const handleSubmit = async (e) => {
               </div>
               <div>
                 <h4 className="font-semibold text-gray-800">Address</h4>
-                <p className="text-gray-600">123 Modern St, New Delhi, India</p>
+                <p className="text-gray-600">
+Plot No 27 Raj Bhawan Near Le Grand Hotel N.H. 24 Garhmukteshwar Dist. Hapur 245205</p>
               </div>
             </div>
 
@@ -219,7 +220,8 @@ const handleSubmit = async (e) => {
               </div>
               <div>
                 <h4 className="font-semibold text-gray-800">Phone</h4>
-                <p className="text-gray-600">+91 98765 43210</p>
+                <p className="text-gray-600">+91 7052598585</p>
+                <p className="text-gray-600">+91 7052598686</p>
               </div>
             </div>
 
@@ -229,7 +231,9 @@ const handleSubmit = async (e) => {
               </div>
               <div>
                 <h4 className="font-semibold text-gray-800">Email</h4>
-                <p className="text-gray-600">contact@example.com</p>
+                <p className="text-gray-600">
+Helpdesk@nabeelbus.com
+</p>
               </div>
             </div>
           </div>

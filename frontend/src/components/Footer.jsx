@@ -11,7 +11,7 @@ const Footer = () => {
           <p className="text-white">
             ISBT Anand Vihar Bus Terminal, Delhi, India
           </p>
-          <p className="text-white">📞 +91 98765 43210</p>
+          <p className="text-white">📞 +91 7052598585</p>
           <p className="text-white">✉️ support@nabeelbus.com</p>
           
         </div>
