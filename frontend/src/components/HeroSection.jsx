@@ -1,4 +1,3 @@
-
 // import React, { useState, useEffect } from "react";
 // import { FaMapMarkerAlt, FaCalendarAlt } from "react-icons/fa";
 // import { MdSwapHoriz } from "react-icons/md";
@@ -86,7 +85,7 @@
 
 //       {/* Search Form */}
 //       <div
-//         className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 
+//         className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2
 //         w-[80%] h-auto h-[150px] bg-white shadow-2xl rounded-[2.5rem] flex items-stretch overflow-hidden z-20"
 //       >
 //         {/* From City */}
@@ -111,7 +110,7 @@
 
 //         {/* Swap Icon */}
 //         <div
-//           className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 
+//           className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2
 //           bg-white border border-gray-200 rounded-full shadow-md p-2 cursor-pointer hover:bg-gray-100 transition mt-2"
 //           onClick={() => {
 //             setFromCity(toCity);
@@ -171,8 +170,6 @@
 
 // export default HeroSection;
 
-
-
 import React, { useState, useEffect } from "react";
 import { FaMapMarkerAlt, FaCalendarAlt } from "react-icons/fa";
 import { MdSwapHoriz } from "react-icons/md";
@@ -186,14 +183,15 @@ const HeroSection = () => {
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const navigate = useNavigate();
 
-        const adminToken = localStorage.getItem("adminToken")
-        const userToken = localStorage.getItem("token")
+  const adminToken = localStorage.getItem("adminToken");
+  const userToken = localStorage.getItem("token");
   useEffect(() => {
     const fetchRoutes = async () => {
       try {
         const res = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}/api/buses/routes`, {
-headers: { Authorization: `Bearer ${token}` },
+          `${import.meta.env.VITE_BACKEND_URL}/api/buses/routes`,
+          {
+            headers: { Authorization: `Bearer ${adminToken}` },
           }
         );
         setRoutes(res.data);
@@ -214,12 +212,12 @@ headers: { Authorization: `Bearer ${token}` },
 
     try {
       const res = await axios.get(
-      `${import.meta.env.VITE_BACKEND_URL}/api/buses/search`,
-      {
-        params: { from: fromCity, to: toCity, date },
-        headers: { Authorization: `Bearer ${userToken}` },
-      }
-    );
+        `${import.meta.env.VITE_BACKEND_URL}/api/buses/search`,
+        {
+          params: { from: fromCity, to: toCity, date },
+          headers: { Authorization: `Bearer ${userToken}` },
+        }
+      );
 
       const buses = res.data;
       if (!buses.length) {
@@ -258,8 +256,8 @@ headers: { Authorization: `Bearer ${token}` },
       </div>
 
       {/* Search Form */}
-<div
-  className="
+      <div
+        className="
     absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2
     w-full max-w-screen-lg
     bg-white backdrop-blur-lg shadow-2xl
@@ -267,8 +265,8 @@ headers: { Authorization: `Bearer ${token}` },
     flex flex-col md:!flex-row md:!flex-nowrap md:items-center
     overflow-hidden z-20 border border-white/30
   "
->
-{/* <div
+      >
+        {/* <div
   className="
     absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2
     w-full max-w-screen-lg
@@ -278,89 +276,92 @@ headers: { Authorization: `Bearer ${token}` },
     overflow-hidden z-20 border border-white/10
   "
 > */}
-  {/* From City */}
-  <div className="flex flex-1 items-center gap-3 px-6 py-5 border-b md:border-b-0 md:border-r border-gray-200/40 min-w-0">
-    <FaMapMarkerAlt className="text-[#6C2BD9] text-xl flex-shrink-0" />
-    <div className="flex flex-col w-full relative">
-      <label className="text-xs md:text-sm text-gray-600 font-medium">From City</label>
-      <input
-        list="fromCities"
-        value={fromCity}
-        onChange={(e) => setFromCity(e.target.value)}
-        placeholder="From City"
-        className="font-semibold text-gray-400 bg-transparent placeholder-gray-400 outline-none border-none focus:ring-0"
-      />
-      <datalist id="fromCities">
-        {getSuggestions(fromCity, routes.origins).map((city, idx) => (
-          <option key={idx} value={city} />
-        ))}
-      </datalist>
-    </div>
-  </div>
+        {/* From City */}
+        <div className="flex flex-1 items-center gap-3 px-6 py-5 border-b md:border-b-0 md:border-r border-gray-200/40 min-w-0">
+          <FaMapMarkerAlt className="text-[#6C2BD9] text-xl flex-shrink-0" />
+          <div className="flex flex-col w-full relative">
+            <label className="text-xs md:text-sm text-gray-600 font-medium">
+              From City
+            </label>
+            <input
+              list="fromCities"
+              value={fromCity}
+              onChange={(e) => setFromCity(e.target.value)}
+              placeholder="From City"
+              className="font-semibold text-gray-400 bg-transparent placeholder-gray-400 outline-none border-none focus:ring-0"
+            />
+            <datalist id="fromCities">
+              {getSuggestions(fromCity, routes.origins).map((city, idx) => (
+                <option key={idx} value={city} />
+              ))}
+            </datalist>
+          </div>
+        </div>
 
-  {/* Swap Icon */}
-  <div
-    className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 
+        {/* Swap Icon */}
+        <div
+          className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 
       bg-white text-gray-700 border border-gray-600 rounded-full shadow-lg p-3 
       cursor-pointer hover:scale-110 transition duration-300 z-30"
-    onClick={() => {
-      setFromCity(toCity);
-      setToCity(fromCity);
-    }}
-  >
-    <MdSwapHoriz className="text-2xl" />
-  </div>
+          onClick={() => {
+            setFromCity(toCity);
+            setToCity(fromCity);
+          }}
+        >
+          <MdSwapHoriz className="text-2xl" />
+        </div>
 
-  {/* To City */}
-  <div className="flex flex-1 items-center gap-3 px-6 py-5 border-b md:border-b-0 md:border-r border-gray-200/40 min-w-0">
-    <FaMapMarkerAlt className="text-[#6C2BD9] text-xl flex-shrink-0" />
-    <div className="flex flex-col w-full relative">
-      <label className="text-xs md:text-sm text-gray-600 font-medium">To City</label>
-      <input
-        list="toCities"
-        value={toCity}
-        onChange={(e) => setToCity(e.target.value)}
-        placeholder="To City"
-        className="font-semibold text-gray-400 bg-transparent placeholder-gray-400 outline-none border-none focus:ring-0"
-      />
-      <datalist id="toCities">
-        {getSuggestions(toCity, routes.destinations).map((city, idx) => (
-          <option key={idx} value={city} />
-        ))}
-      </datalist>
-    </div>
-  </div>
+        {/* To City */}
+        <div className="flex flex-1 items-center gap-3 px-6 py-5 border-b md:border-b-0 md:border-r border-gray-200/40 min-w-0">
+          <FaMapMarkerAlt className="text-[#6C2BD9] text-xl flex-shrink-0" />
+          <div className="flex flex-col w-full relative">
+            <label className="text-xs md:text-sm text-gray-600 font-medium">
+              To City
+            </label>
+            <input
+              list="toCities"
+              value={toCity}
+              onChange={(e) => setToCity(e.target.value)}
+              placeholder="To City"
+              className="font-semibold text-gray-400 bg-transparent placeholder-gray-400 outline-none border-none focus:ring-0"
+            />
+            <datalist id="toCities">
+              {getSuggestions(toCity, routes.destinations).map((city, idx) => (
+                <option key={idx} value={city} />
+              ))}
+            </datalist>
+          </div>
+        </div>
 
-  {/* Date */}
-  <div className="flex flex-1 items-center gap-3 px-6 py-5 border-b md:border-b-0 md:border-r border-gray-200/40 min-w-0">
-    <FaCalendarAlt className="text-[#6C2BD9] text-xl flex-shrink-0" />
-    <div className="flex flex-col w-full">
-      <label className="text-xs md:text-sm text-gray-600 font-medium">Date</label>
-      <input
-        type="date"
-        value={date}
-        onChange={(e) => setDate(e.target.value)}
-        className="font-semibold text-gray-400 bg-transparent outline-none border-none focus:ring-0 [color-scheme:dark]"
-      />
-    </div>
-  </div>
+        {/* Date */}
+        <div className="flex flex-1 items-center gap-3 px-6 py-5 border-b md:border-b-0 md:border-r border-gray-200/40 min-w-0">
+          <FaCalendarAlt className="text-[#6C2BD9] text-xl flex-shrink-0" />
+          <div className="flex flex-col w-full">
+            <label className="text-xs md:text-sm text-gray-600 font-medium">
+              Date
+            </label>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="font-semibold text-gray-400 bg-transparent outline-none border-none focus:ring-0 [color-scheme:dark]"
+            />
+          </div>
+        </div>
 
-  {/* Search Button */}
-  <div className="flex justify-center md:justify-end items-center px-6 py-5 md:py-0 flex-shrink-0">
-    <div
-      className="bg-[#FF4D79] hover:bg-[#ff3166] text-white font-semibold px-8 py-4 
+        {/* Search Button */}
+        <div className="flex justify-center md:justify-end items-center px-6 py-5 md:py-0 flex-shrink-0">
+          <div
+            className="bg-[#FF4D79] hover:bg-[#ff3166] text-white font-semibold px-8 py-4 
       text-base md:text-lg transition-all duration-300 whitespace-nowrap rounded-[1rem] cursor-pointer shadow-lg hover:scale-105 w-full md:w-auto text-center"
-      onClick={handleSearch}
-    >
-      Search
-    </div>
-  </div>
-</div>
-
+            onClick={handleSearch}
+          >
+            Search
+          </div>
+        </div>
+      </div>
     </section>
   );
 };
 
 export default HeroSection;
-
-

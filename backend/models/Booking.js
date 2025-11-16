@@ -14,10 +14,10 @@ const bookingSchema = new mongoose.Schema({
   busId: { type: mongoose.Schema.Types.ObjectId, ref: "Bus" },
   scheduleId: { type: mongoose.Schema.Types.ObjectId, ref: "Schedule", required: true },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    agentId: { type: mongoose.Schema.Types.ObjectId, ref: "Agent" }, // ✅ new field
-  passengers: [passengerSchema],  // 👈 New: stores each passenger details
-  seats: { type: Object, required: true }, // still keeping old seat mapping if needed
-   bookedBy: { type: String, enum: ["user", "agent"], default: "user" }, // ✅ important
+    agentId: { type: mongoose.Schema.Types.ObjectId, ref: "Agent" },
+  passengers: [passengerSchema],
+  seats: { type: Object, required: true },
+   bookedBy: { type: String, enum: ["user", "agent"], default: "user" },
    contact: {
       name: String,
       phone: String,
@@ -31,4 +31,3 @@ const bookingSchema = new mongoose.Schema({
 });
 
 export default mongoose.model("Booking", bookingSchema);
-

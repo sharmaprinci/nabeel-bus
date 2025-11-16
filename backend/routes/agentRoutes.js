@@ -83,11 +83,7 @@ router.put("/profile", verifyToken, async (req, res) => {
   }
 });
 
-/**
- * 🧾 Get Agent’s Bookings (No payment needed for agent bookings)
- */
 // /api/agents/my-bookings
-// ✅ /api/agents/my-bookings
 router.get("/my-bookings", verifyToken, async (req, res) => {
   try {
     if (req.user.role !== "agent") {
@@ -168,42 +164,5 @@ router.get("/my-bookings", verifyToken, async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
-
-// router.get("/my-bookings", verifyToken, async (req, res) => {
-//   try {
-//     if (req.user.role !== "agent") {
-//       return res.status(403).json({ message: "Access denied: Agents only" });
-//     }
-
-//     const agentId = req.user.id;
-
-//     // Find bookings created by this agent
-//     const bookings = await Booking.find({
-//       userId: agentId,
-//     })
-//       .populate("busId")
-//       .populate("scheduleId")
-//       .sort({ createdAt: -1 });
-
-//     // Format booking data for frontend
-//     const formattedBookings = bookings.map((b) => ({
-//       bookingId: b._id,
-//       busName: b.busId?.name || "—",
-//       busNumber: b.busId?.number || "—",
-//       origin: b.scheduleId?.route?.from || "—",
-//       destination: b.scheduleId?.route?.to || "—",
-//       date: b.scheduleId?.date || "—",
-//       seatNos: Object.keys(b.seats || {}),
-//       totalAmount: b.totalAmount,
-//       status: b.status,
-//       paymentStatus: b.paid ? "Paid" : "Not Required (Agent)",
-//     }));
-
-//     res.json({ success: true, bookings: formattedBookings });
-//   } catch (err) {
-//     console.error("❌ Agent booking fetch error:", err);
-//     res.status(500).json({ success: false, message: "Server error" });
-//   }
-// });
 
 export default router;

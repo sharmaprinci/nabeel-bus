@@ -6,8 +6,6 @@ import bcrypt from "bcryptjs";
 
 const router = express.Router();
 
-// // ✅ Full profile details
-
 /**
  * ✅ GET Unified Profile (works for both user & agent)
  */

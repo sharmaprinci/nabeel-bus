@@ -50,26 +50,3 @@ const scheduleSchema = new mongoose.Schema({
 scheduleSchema.index({ busId: 1, date: 1 }, { unique: true });
 
 export default mongoose.model("Schedule", scheduleSchema);
-
-// import mongoose from "mongoose";
-
-// const scheduleSchema = new mongoose.Schema({
-//   busId: { type: mongoose.Schema.Types.ObjectId, ref: "Bus", required: true },
-//   busNumber: { type: String, required: true },  // 🆕 new field
-//   date: { type: String, required: true },
-//   route: { from: String, to: String },
-//   availableSeats: { type: Number, default: 0 },
-//   seatStatus: { type: Object, default: {} },
-//   amenities: {
-//     type: [String], // e.g. ['wifi', 'charging', 'water', 'blanket']
-//     default: [],
-//   },
-//   special: { type: Boolean, default: false },
-//   remarks: { type: String }
-  
-// });
-
-
-// scheduleSchema.index({ busId: 1, date: 1 }, { unique: true });
-
-// export default mongoose.model("Schedule", scheduleSchema);

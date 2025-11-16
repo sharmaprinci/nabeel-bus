@@ -54,6 +54,7 @@ export const generateBusTicket = async (booking) => {
         driverInfo = busData.drivers?.[0];
         boardingPoint = busData.boardingPoints?.[0];
         droppingPoint = busData.droppingPoints?.[0];
+        console.log("bus data :", busId)
       }
     } catch (err) {
       console.warn("⚠️ Could not fetch bus details:", err.message);

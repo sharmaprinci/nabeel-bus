@@ -12,49 +12,45 @@ import adminAuth from "../middleware/adminAuth.js";
 const router = express.Router();
 
 // ✅ Admin Login
-router.post(
-  "/login",
-  async (req, res) => {
-    const { email, password } = req.body;
+router.post("/login", async (req, res) => {
+  const { email, password } = req.body;
 
-    try {
-      console.log("🟡 Login attempt:", email);
+  try {
+    console.log("🟡 Login attempt:", email);
 
-      const admin = await Admin.findOne({ email });
-      if (!admin) {
-        console.log("❌ No admin found for email:", email);
-        return res.status(400).json({ message: "Invalid credentials" });
-      }
-
-      const isMatch = await bcrypt.compare(password, admin.password);
-      if (!isMatch) {
-        console.log("❌ Password mismatch for:", email);
-        return res.status(400).json({ message: "Invalid credentials" });
-      }
-
-      if (!process.env.JWT_SECRET) {
-        console.log("🚨 Missing JWT_SECRET in .env file");
-        return res.status(500).json({ message: "Server misconfiguration" });
-      }
-
-      const token = jwt.sign(
-  { id: admin._id, email: admin.email },
-  process.env.JWT_SECRET,
-  { expiresIn: "1d" }
-);
-
-
-      console.log("✅ Login successful:", email);
-      res.json({ token });
-    } catch (error) {
-      console.error("💥 Detailed server error:", error);
-      res.status(500).json({ error: "Server error" });
+    const admin = await Admin.findOne({ email });
+    if (!admin) {
+      console.log("❌ No admin found for email:", email);
+      return res.status(400).json({ message: "Invalid credentials" });
     }
+
+    const isMatch = await bcrypt.compare(password, admin.password);
+    if (!isMatch) {
+      console.log("❌ Password mismatch for:", email);
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    if (!process.env.JWT_SECRET) {
+      console.log("🚨 Missing JWT_SECRET in .env file");
+      return res.status(500).json({ message: "Server misconfiguration" });
+    }
+
+    const token = jwt.sign(
+      { id: admin._id, email: admin.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    console.log("✅ Login successful:", email);
+    res.json({ token });
+  } catch (error) {
+    console.error("💥 Detailed server error:", error);
+    res.status(500).json({ error: "Server error" });
   }
-);
+});
 
 // 👑 GET all users with their bookings
-router.get("/users", adminAuth,  async (req, res) => {
+router.get("/users", adminAuth, async (req, res) => {
   try {
     const users = await User.find().sort({ createdAt: -1 });
 
@@ -62,7 +58,7 @@ router.get("/users", adminAuth,  async (req, res) => {
     const bookings = await Booking.find({ userId: { $in: userIds } })
       .populate({
         path: "scheduleId",
-        populate: { path: "busId", select: "name number " }
+        populate: { path: "busId", select: "name number " },
       })
       .sort({ createdAt: -1 });
 
@@ -86,13 +82,15 @@ router.get("/users", adminAuth,  async (req, res) => {
 });
 
 // ✅ Admin creates an Agent
-router.post("/create-agent", adminAuth,  async (req, res) => {
+router.post("/create-agent", adminAuth, async (req, res) => {
   try {
     const { name, email, password, mobile, company } = req.body;
 
     const existing = await Agent.findOne({ email });
     if (existing) {
-      return res.status(400).json({ message: "Agent with this email already exists" });
+      return res
+        .status(400)
+        .json({ message: "Agent with this email already exists" });
     }
 
     const agent = new Agent({
@@ -123,16 +121,14 @@ router.get("/agents", adminAuth, async (req, res) => {
 
     // 2️⃣ Get all bookings for these agents (userId or agentId)
     const bookings = await Booking.find({
-      $or: [
-        { userId: { $in: agentIds } },
-        { agentId: { $in: agentIds } },
-      ],
+      $or: [{ userId: { $in: agentIds } }, { agentId: { $in: agentIds } }],
     })
       .populate({
         path: "scheduleId",
         populate: {
           path: "busId",
-          select: "name number acType amenities drivers boardingPoints droppingPoints",
+          select:
+            "name number acType amenities drivers boardingPoints droppingPoints",
         },
       })
       .populate({
@@ -163,8 +159,12 @@ router.get("/agents", adminAuth, async (req, res) => {
         (sum, b) => sum + (b.totalAmount || 0),
         0
       );
-      const activeBookings = agentBookings.filter((b) => b.status === "booked").length;
-      const cancelledBookings = agentBookings.filter((b) => b.status === "cancelled").length;
+      const activeBookings = agentBookings.filter(
+        (b) => b.status === "booked"
+      ).length;
+      const cancelledBookings = agentBookings.filter(
+        (b) => b.status === "cancelled"
+      ).length;
 
       return {
         ...agent.toObject(),
@@ -194,10 +194,21 @@ router.get("/agents-summary", adminAuth, async (req, res) => {
     const bookings = await Booking.find({ userId: { $in: agentIds } });
 
     const totalBookings = bookings.length;
-    const totalRevenue = bookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0);
-    const totalSeats = bookings.reduce((sum, b) => sum + Object.keys(b.seats || {}).length, 0);
+    const totalRevenue = bookings.reduce(
+      (sum, b) => sum + (b.totalAmount || 0),
+      0
+    );
+    const totalSeats = bookings.reduce(
+      (sum, b) => sum + Object.keys(b.seats || {}).length,
+      0
+    );
 
-    res.json({ totalAgents: agents.length, totalBookings, totalSeats, totalRevenue });
+    res.json({
+      totalAgents: agents.length,
+      totalBookings,
+      totalSeats,
+      totalRevenue,
+    });
   } catch (err) {
     res.status(500).json({ message: "Failed to get agent summary" });
   }
@@ -268,18 +279,9 @@ router.get("/passenger-summary", adminAuth, async (req, res) => {
           busId: bus._id,
           busName: bus.name || bus.busName || "Unknown Bus",
           busNumber: bus.number || bus.busNumber || "-",
-          origin:
-            route.from ||
-            s.route?.from ||
-            bus.origin ||
-            s.origin ||
-            "-",
+          origin: route.from || s.route?.from || bus.origin || s.origin || "-",
           destination:
-            route.to ||
-            s.route?.to ||
-            bus.destination ||
-            s.destination ||
-            "-",
+            route.to || s.route?.to || bus.destination || s.destination || "-",
           date: s.date,
           totalBookings,
           totalPassengers,
@@ -301,12 +303,13 @@ router.get("/passenger-summary", adminAuth, async (req, res) => {
 router.get("/dashboard-stats", adminAuth, async (req, res) => {
   try {
     // 1️⃣ Get totals
-    const [totalBuses, totalAgents, totalUsers, totalBookings] = await Promise.all([
-      Bus.countDocuments(),
-      Agent.countDocuments(),
-      User.countDocuments(),
-      Booking.countDocuments(),
-    ]);
+    const [totalBuses, totalAgents, totalUsers, totalBookings] =
+      await Promise.all([
+        Bus.countDocuments(),
+        Agent.countDocuments(),
+        User.countDocuments(),
+        Booking.countDocuments(),
+      ]);
 
     // 2️⃣ Combine user + agent revenue and booking status counts
     const userLookups = await Booking.aggregate([
@@ -338,7 +341,12 @@ router.get("/dashboard-stats", adminAuth, async (req, res) => {
           totalRevenue: {
             $sum: {
               $cond: [
-                { $and: [{ $eq: ["$combined.role", "user"] }, { $eq: ["$paid", true] }] },
+                {
+                  $and: [
+                    { $eq: ["$combined.role", "user"] },
+                    { $eq: ["$paid", true] },
+                  ],
+                },
                 "$totalAmount",
                 0,
               ],
@@ -347,15 +355,26 @@ router.get("/dashboard-stats", adminAuth, async (req, res) => {
           unpaidRevenue: {
             $sum: {
               $cond: [
-                { $and: [{ $eq: ["$combined.role", "user"] }, { $eq: ["$paid", false] }] },
+                {
+                  $and: [
+                    { $eq: ["$combined.role", "user"] },
+                    { $eq: ["$paid", false] },
+                  ],
+                },
                 "$totalAmount",
                 0,
               ],
             },
           },
-          confirmedBookings: { $sum: { $cond: [{ $eq: ["$status", "booked"] }, 1, 0] } },
-          pendingBookings: { $sum: { $cond: [{ $eq: ["$status", "pending"] }, 1, 0] } },
-          cancelledBookings: { $sum: { $cond: [{ $eq: ["$status", "cancelled"] }, 1, 0] } },
+          confirmedBookings: {
+            $sum: { $cond: [{ $eq: ["$status", "booked"] }, 1, 0] },
+          },
+          pendingBookings: {
+            $sum: { $cond: [{ $eq: ["$status", "pending"] }, 1, 0] },
+          },
+          cancelledBookings: {
+            $sum: { $cond: [{ $eq: ["$status", "cancelled"] }, 1, 0] },
+          },
         },
       },
     ]);
@@ -394,8 +413,18 @@ router.get("/dashboard-stats", adminAuth, async (req, res) => {
     ]);
 
     const monthNames = [
-      "Jan","Feb","Mar","Apr","May","Jun",
-      "Jul","Aug","Sep","Oct","Nov","Dec",
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
     ];
 
     const monthlyTrends = monthNames.map((m, i) => {
@@ -469,213 +498,218 @@ router.get("/dashboard-stats", adminAuth, async (req, res) => {
     ]);
 
     const agents = {
-      totalAgentBookings: agentBookings.reduce((a, b) => a + b.totalBookings, 0),
+      totalAgentBookings: agentBookings.reduce(
+        (a, b) => a + b.totalBookings,
+        0
+      ),
       totalAgentSeats: agentBookings.reduce((a, b) => a + b.totalSeats, 0),
       activeAgents: totalAgents,
     };
 
     // 6️⃣ Bookings per Bus (via schedule → bus)
-// 6️⃣ Bookings per Bus (via schedule → bus, exclude agent revenue)
-const bookingsPerBus = await Booking.aggregate([
-  // Join schedules
-  {
-    $lookup: {
-      from: "schedules",
-      localField: "scheduleId",
-      foreignField: "_id",
-      as: "schedule",
-    },
-  },
-  { $unwind: "$schedule" },
+    // 6️⃣ Bookings per Bus (via schedule → bus, exclude agent revenue)
+    const bookingsPerBus = await Booking.aggregate([
+      // Join schedules
+      {
+        $lookup: {
+          from: "schedules",
+          localField: "scheduleId",
+          foreignField: "_id",
+          as: "schedule",
+        },
+      },
+      { $unwind: "$schedule" },
 
-  // Join buses
-  {
-    $lookup: {
-      from: "buses",
-      localField: "schedule.busId",
-      foreignField: "_id",
-      as: "bus",
-    },
-  },
-  { $unwind: "$bus" },
+      // Join buses
+      {
+        $lookup: {
+          from: "buses",
+          localField: "schedule.busId",
+          foreignField: "_id",
+          as: "bus",
+        },
+      },
+      { $unwind: "$bus" },
 
-  // Join users and agents (to determine who made the booking)
-  {
-    $lookup: {
-      from: "users",
-      localField: "userId",
-      foreignField: "_id",
-      as: "userData",
-    },
-  },
-  {
-    $lookup: {
-      from: "agents",
-      localField: "userId",
-      foreignField: "_id",
-      as: "agentData",
-    },
-  },
+      // Join users and agents (to determine who made the booking)
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "userData",
+        },
+      },
+      {
+        $lookup: {
+          from: "agents",
+          localField: "userId",
+          foreignField: "_id",
+          as: "agentData",
+        },
+      },
 
-  // Merge user + agent
-  {
-    $addFields: {
-      combined: { $concatArrays: ["$userData", "$agentData"] },
-    },
-  },
-  { $unwind: "$combined" },
+      // Merge user + agent
+      {
+        $addFields: {
+          combined: { $concatArrays: ["$userData", "$agentData"] },
+        },
+      },
+      { $unwind: "$combined" },
 
-  // Group per bus
-  {
-    $group: {
-      _id: "$bus.name",
-      busNumber: { $first: "$bus.number" },
-      totalBookings: { $sum: 1 },
-      totalPassengers: { $sum: { $size: "$passengers" } },
+      // Group per bus
+      {
+        $group: {
+          _id: "$bus.name",
+          busNumber: { $first: "$bus.number" },
+          totalBookings: { $sum: 1 },
+          totalPassengers: { $sum: { $size: "$passengers" } },
 
-      // ✅ Exclude agent revenue
-      totalRevenue: {
-        $sum: {
-          $cond: [
-            {
-              $and: [
-                { $eq: ["$combined.role", "user"] },
-                { $eq: ["$paid", true] },
-                { $ne: ["$status", "cancelled"] },
+          // ✅ Exclude agent revenue
+          totalRevenue: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $eq: ["$combined.role", "user"] },
+                    { $eq: ["$paid", true] },
+                    { $ne: ["$status", "cancelled"] },
+                  ],
+                },
+                "$totalAmount",
+                0,
               ],
             },
-            "$totalAmount",
-            0,
-          ],
+          },
         },
       },
-    },
-  },
-  { $sort: { totalBookings: -1 } },
-]);
+      { $sort: { totalBookings: -1 } },
+    ]);
 
-// 7️⃣ Bookings per Bus by Date (includes bus number + route, excludes agent revenue)
-const bookingsPerBusByDate = await Booking.aggregate([
-  // Join schedules
-  {
-    $lookup: {
-      from: "schedules",
-      localField: "scheduleId",
-      foreignField: "_id",
-      as: "schedule",
-    },
-  },
-  { $unwind: "$schedule" },
-
-  // Join buses
-  {
-    $lookup: {
-      from: "buses",
-      localField: "schedule.busId",
-      foreignField: "_id",
-      as: "bus",
-    },
-  },
-  { $unwind: "$bus" },
-
-  // Join users (for excluding agents)
-  {
-    $lookup: {
-      from: "users",
-      localField: "userId",
-      foreignField: "_id",
-      as: "userData",
-    },
-  },
-
-  // Join agents
-  {
-    $lookup: {
-      from: "agents",
-      localField: "userId",
-      foreignField: "_id",
-      as: "agentData",
-    },
-  },
-
-  // Merge user + agent info
-  {
-    $addFields: {
-      combined: { $concatArrays: ["$userData", "$agentData"] },
-
-      // ✅ Parse date safely (string → Date)
-      parsedDate: {
-        $cond: [
-          { $eq: [{ $type: "$schedule.date" }, "string"] },
-          { $dateFromString: { dateString: "$schedule.date" } },
-          "$schedule.date",
-        ],
-      },
-
-      // ✅ Safe field extraction to avoid dot errors
-      routeFrom: {
-        $getField: {
-          field: "from",
-          input: { $getField: { field: "route", input: "$schedule" } },
+    // 7️⃣ Bookings per Bus by Date (includes bus number + route, excludes agent revenue)
+    const bookingsPerBusByDate = await Booking.aggregate([
+      // Join schedules
+      {
+        $lookup: {
+          from: "schedules",
+          localField: "scheduleId",
+          foreignField: "_id",
+          as: "schedule",
         },
       },
-      routeTo: {
-        $getField: {
-          field: "to",
-          input: { $getField: { field: "route", input: "$schedule" } },
+      { $unwind: "$schedule" },
+
+      // Join buses
+      {
+        $lookup: {
+          from: "buses",
+          localField: "schedule.busId",
+          foreignField: "_id",
+          as: "bus",
         },
       },
-    },
-  },
+      { $unwind: "$bus" },
 
-  { $unwind: "$combined" },
-
-  // ✅ Group by bus name, number, route, and date
-  {
-    $group: {
-      _id: {
-        busName: "$bus.name",
-        busNumber: "$bus.number",
-        routeFrom: "$routeFrom",
-        routeTo: "$routeTo",
-        date: { $dateToString: { format: "%Y-%m-%d", date: "$parsedDate" } },
+      // Join users (for excluding agents)
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "userData",
+        },
       },
-      totalBookings: { $sum: 1 },
-      totalPassengers: { $sum: { $size: "$passengers" } },
-      totalRevenue: {
-        $sum: {
-          $cond: [
-            {
-              $and: [
-                { $eq: ["$combined.role", "user"] }, // ✅ only normal users
-                { $eq: ["$paid", true] },
-                { $ne: ["$status", "cancelled"] },
+
+      // Join agents
+      {
+        $lookup: {
+          from: "agents",
+          localField: "userId",
+          foreignField: "_id",
+          as: "agentData",
+        },
+      },
+
+      // Merge user + agent info
+      {
+        $addFields: {
+          combined: { $concatArrays: ["$userData", "$agentData"] },
+
+          // ✅ Parse date safely (string → Date)
+          parsedDate: {
+            $cond: [
+              { $eq: [{ $type: "$schedule.date" }, "string"] },
+              { $dateFromString: { dateString: "$schedule.date" } },
+              "$schedule.date",
+            ],
+          },
+
+          // ✅ Safe field extraction to avoid dot errors
+          routeFrom: {
+            $getField: {
+              field: "from",
+              input: { $getField: { field: "route", input: "$schedule" } },
+            },
+          },
+          routeTo: {
+            $getField: {
+              field: "to",
+              input: { $getField: { field: "route", input: "$schedule" } },
+            },
+          },
+        },
+      },
+
+      { $unwind: "$combined" },
+
+      // ✅ Group by bus name, number, route, and date
+      {
+        $group: {
+          _id: {
+            busName: "$bus.name",
+            busNumber: "$bus.number",
+            routeFrom: "$routeFrom",
+            routeTo: "$routeTo",
+            date: {
+              $dateToString: { format: "%Y-%m-%d", date: "$parsedDate" },
+            },
+          },
+          totalBookings: { $sum: 1 },
+          totalPassengers: { $sum: { $size: "$passengers" } },
+          totalRevenue: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $eq: ["$combined.role", "user"] }, // ✅ only normal users
+                    { $eq: ["$paid", true] },
+                    { $ne: ["$status", "cancelled"] },
+                  ],
+                },
+                "$totalAmount",
+                0,
               ],
             },
-            "$totalAmount",
-            0,
-          ],
+          },
         },
       },
-    },
-  },
-  { $sort: { "_id.date": 1 } },
-]);
+      { $sort: { "_id.date": 1 } },
+    ]);
 
-// 🧩 Transform for frontend
-const dateWise = {};
-bookingsPerBusByDate.forEach((b) => {
-  const { date, busName, busNumber, routeFrom, routeTo } = b._id;
-  const route = `${routeFrom} → ${routeTo}`;
-  const key = `${busName} (${busNumber})`;
+    // 🧩 Transform for frontend
+    const dateWise = {};
+    bookingsPerBusByDate.forEach((b) => {
+      const { date, busName, busNumber, routeFrom, routeTo } = b._id;
+      const route = `${routeFrom} → ${routeTo}`;
+      const key = `${busName} (${busNumber})`;
 
-  if (!dateWise[date]) dateWise[date] = { date, route };
-  dateWise[date][`${key}_Bookings`] = b.totalBookings;
-  dateWise[date][`${key}_Passengers`] = b.totalPassengers;
-  dateWise[date][`${key}_Revenue`] = b.totalRevenue;
-});
+      if (!dateWise[date]) dateWise[date] = { date, route };
+      dateWise[date][`${key}_Bookings`] = b.totalBookings;
+      dateWise[date][`${key}_Passengers`] = b.totalPassengers;
+      dateWise[date][`${key}_Revenue`] = b.totalRevenue;
+    });
 
-const bookingsPerBusByDateData = Object.values(dateWise);
+    const bookingsPerBusByDateData = Object.values(dateWise);
 
     // ✅ Final combined response
     res.json({
@@ -693,7 +727,7 @@ const bookingsPerBusByDateData = Object.values(dateWise);
   }
 });
 
-router.get("/agent-bookings", adminAuth,  async (req, res) => {
+router.get("/agent-bookings", adminAuth, async (req, res) => {
   const bookings = await Booking.find({ bookedBy: "agent" })
     .populate("busId")
     .populate("userId")
@@ -823,8 +857,7 @@ router.get("/booking-summary", adminAuth, async (req, res) => {
 
     const schedules = await Schedule.find(query).populate("busId");
 
-    if (!schedules.length)
-      return res.json({ success: true, summary: [] });
+    if (!schedules.length) return res.json({ success: true, summary: [] });
 
     const summary = [];
 
@@ -849,10 +882,9 @@ router.get("/booking-summary", adminAuth, async (req, res) => {
         // ✅ Determine who booked
         const isAgentBooking = !!b.agentId;
         const bookedBy = isAgentBooking ? "agent" : "user";
-        const bookedByName =
-          isAgentBooking
-            ? b.agentId.agencyName || b.agentId.name
-            : b.userId?.name || "-";
+        const bookedByName = isAgentBooking
+          ? b.agentId.agencyName || b.agentId.name
+          : b.userId?.name || "-";
 
         // ✅ Payment Status Logic
         const paymentStatus = isAgentBooking

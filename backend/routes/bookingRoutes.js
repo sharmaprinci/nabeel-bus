@@ -384,7 +384,6 @@ router.get("/me", verifyToken, async (req, res) => {
   }
 });
 
-
 // ✅ Cancel Booking (User only)
 router.put("/:id/cancel", verifyToken, async (req, res) => {
   try {
@@ -488,37 +487,6 @@ router.get("/stats", verifyToken, async (req, res) => {
 });
 
 // 📝 Get single booking by ID
-
-// router.get("/:id", async (req, res) => {
-//   try {
-//     const booking = await Booking.findById(req.params.id)
-//       .populate({
-//         path: "scheduleId",
-//         populate: [
-//           {
-//             path: "busId",
-//             select: "name number acType amenities drivers boardingPoints droppingPoints departureTime arrivalTime routes",
-//           },
-//           {
-//             path: "route",
-//             select: "from to distance",
-//           },
-//         ],
-//       })
-//       .populate("agentId", "name email mobile")
-//       .populate("userId", "name email mobile");
-
-//     if (!booking) {
-//       return res.status(404).json({ message: "Booking not found" });
-//     }
-
-//     res.json({ success: true, booking });
-//   } catch (err) {
-//     console.error("❌ Error fetching booking details:", err);
-//     res.status(500).json({ success: false, message: "Server error" });
-//   }
-// });
-
 router.get("/:id", verifyToken, async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id).populate(
